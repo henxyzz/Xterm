@@ -3,17 +3,19 @@ FROM node:20
 LABEL maintainer="anakterminal@localhost"
 LABEL description="Dockerfile for Online Terminal using Node.js + xterm.js + pty.js"
 
-# Install dependensi + apt-utils biar gak warning
+# Install dependency dasar + pm2 + bersihin warning apt-utils
 RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y \
-    apt-utils \
-    ffmpeg \
-    git \
-    wget \
-    imagemagick \
-    bash \
-    libwebp-dev \
-    && rm -rf /var/lib/apt/lists/*
+  apt-get install -y \
+  ffmpeg \
+  git \
+  wget \
+  imagemagick \
+  bash \
+  python3 \
+  python3-pip \
+  nano \
+  apt-utils \
+  && rm -rf /var/lib/apt/lists/*
 
 # Buat folder kerja
 WORKDIR /app
@@ -28,5 +30,5 @@ COPY . .
 # Expose port
 EXPOSE 8080
 
-# Jalankan server
-CMD ["node", "server.js"]
+# Jalankan server dengan PM2
+CMD ["npm", "start"]
