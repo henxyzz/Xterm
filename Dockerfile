@@ -1,33 +1,32 @@
-# Menggunakan image Node.js 20 sebagai base image
 FROM node:20
 
-# Menambahkan label untuk maintainer dan deskripsi
 LABEL maintainer="anakterminal@localhost"
 LABEL description="Dockerfile for Online Terminal using Node.js + xterm.js + pty.js"
 
-# Memperbarui apt dan menginstal dependensi dasar
+# Install dependensi + apt-utils biar gak warning
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y \
+    apt-utils \
     ffmpeg \
     git \
     wget \
     imagemagick \
     bash \
-    libwebp \
+    libwebp-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Menetapkan folder kerja
+# Buat folder kerja
 WORKDIR /app
 
-# Menyalin package.json dan package-lock.json, kemudian instal dependencies
+# Copy package.json dan install dependencies
 COPY package*.json ./
 RUN npm install
 
-# Menyalin semua kode sumber ke dalam container
+# Copy seluruh source code
 COPY . .
 
-# Menentukan port yang akan diekspos
+# Expose port
 EXPOSE 8080
 
-# Menjalankan server menggunakan Node.js
+# Jalankan server
 CMD ["node", "server.js"]
