@@ -6,6 +6,7 @@ LABEL description="Dockerfile for Online Terminal using Node.js + xterm.js + pty
 # Install dependency dasar + pm2 + bersihin warning apt-utils
 RUN apt-get update && apt-get upgrade -y && \
   apt-get install -y \
+  lsof \
   ffmpeg \
   git \
   webp \
