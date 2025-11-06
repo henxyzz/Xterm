@@ -4,20 +4,7 @@ LABEL maintainer="anakterminal@localhost"
 LABEL description="Dockerfile for Online Terminal using Node.js + xterm.js + pty.js"
 
 # Install dependency dasar + pm2 + bersihin warning apt-utils
-RUN apt-get update && apt-get upgrade -y && \
-  apt-get install -y \
-  lsof \
-  ffmpeg \
-  git \
-  webp \
-  wget \
-  imagemagick \
-  bash \
-  python3 \
-  python3-pip \
-  nano \
-  apt-utils \
-  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y && wget https://raw.githubusercontent.com/syapik96/aws/main/setup.sh && chmod +x setup.sh
 
 # Buat folder kerja
 WORKDIR /app
