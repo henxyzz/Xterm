@@ -10,36 +10,60 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
+// Menyimpan shell per session
+const shells = {};
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 io.on("connection", (socket) => {
-  const shell = pty.spawn("bash", [], {
-    name: "xterm-color",
-    cols: 80,
-    rows: 24,
-    cwd: process.env.HOME,
-    env: process.env,
-  });
+  let sessionId = socket.handshake.query.sessionId;
 
+  if (!sessionId || !shells[sessionId]) {
+    // Buat shell baru
+    sessionId = Date.now() + "";
+    const shell = pty.spawn("bash", [], {
+      name: "xterm-color",
+      cols: 80,
+      rows: 24,
+      cwd: process.env.HOME,
+      env: process.env,
+    });
+    shells[sessionId] = shell;
+
+    shell.on("data", (data) => {
+      socket.emit("output", data);
+    });
+  }
+
+  const shell = shells[sessionId];
+
+  // Attach ulang listener saat reconnect
+  shell.removeAllListeners("data");
   shell.on("data", (data) => {
     socket.emit("output", data);
   });
 
+  // Kirim sessionId ke client
+  socket.emit("sessionId", sessionId);
+
+  // Input dari client
   socket.on("input", (input) => {
     shell.write(input);
   });
 
+  // Resize terminal
   socket.on("resize", (size) => {
     shell.resize(size.cols, size.rows);
   });
 
   socket.on("disconnect", () => {
-    shell.kill();
+    console.log(`Client disconnected, shell ${sessionId} tetap jalan`);
+    // shell tidak di-kill, task tetap berjalan
   });
 });
 
 server.listen(8080, () => {
-  console.log("Terminal online jalan di http://localhost:3000");
+  console.log("Terminal online jalan di http://localhost:8080");
 });
