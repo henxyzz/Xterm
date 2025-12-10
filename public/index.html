@@ -1,70 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Terminal Online Keren</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
-  <style>
-    body {
-      margin: 0;
-      background: #0e0e0e;
-      color: #fff;
-      font-family: monospace;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-    #terminal {
-      flex: 1;
-      padding: 10px;
-    }
-    h1 {
-      text-align: center;
-      padding: 10px;
-      margin: 0;
-      background: #1f1f1f;
-      color: #00ff91;
-      font-size: 1.2em;
-      border-bottom: 1px solid #333;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Terminal Online</title>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+  body { margin: 0; background: #000; color: #0f0; font-family: monospace; }
+  #terminal { white-space: pre-wrap; padding: 10px; height: 90vh; overflow-y: auto; }
+  #input { width: 100%; box-sizing: border-box; padding: 10px; background: #111; color: #0f0; border: none; font-family: monospace; }
+</style>
 </head>
 <body>
-  <h1>Terminal Online - Node.js xterm.js</h1>
-  <div id="terminal"></div>
+<div id="terminal"></div>
+<input id="input" autocomplete="off" autofocus placeholder="Ketik command...">
+<script>
+  let sessionId = localStorage.getItem("sessionId") || "";
+  const socket = io({ query: { sessionId } });
+  const term = document.getElementById("terminal");
+  const input = document.getElementById("input");
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.min.js"></script>
-  <script>
-    const term = new Terminal({
-      cursorBlink: true,
-      theme: {
-        background: '#0e0e0e',
-        foreground: '#ffffff',
-        cursor: '#00ff91',
-      },
-    });
+  socket.on("sessionId", (id) => {
+    sessionId = id;
+    localStorage.setItem("sessionId", id);
+  });
 
-    term.open(document.getElementById('terminal'));
+  socket.on("output", (data) => {
+    term.textContent += data;
+    term.scrollTop = term.scrollHeight;
+  });
 
-    const socket = io();
-
-    term.onData(data => socket.emit('input', data));
-    socket.on('output', data => term.write(data));
-
-    window.addEventListener('resize', () => {
-      socket.emit('resize', {
-        cols: term.cols,
-        rows: term.rows,
-      });
-    });
-
-    // First emit resize biar pas
-    socket.emit('resize', {
-      cols: term.cols,
-      rows: term.rows,
-    });
-  </script>
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      socket.emit("input", input.value + "\r");
+      input.value = "";
+    }
+  });
+</script>
 </body>
 </html>
