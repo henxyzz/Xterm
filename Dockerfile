@@ -3,35 +3,46 @@ FROM ubuntu:22.04
 LABEL maintainer="anakterminal@localhost"
 LABEL description="Dockerfile for Online Terminal using Node.js + xterm.js + pty.js"
 
-# Install dependency dasar + pm2 + bersihin warning apt-utils
-RUN apt-get update && apt-get upgrade -y && \
-  apt-get install -y \
-  lsof \
-  ffmpeg \
-  git \
-  nodejs \
-  webp \
-  wget \
-  imagemagick \
-  bash \
-  python3 \
-  python3-pip \
-  nano \
-  apt-utils \
-  && rm -rf /var/lib/apt/lists/*
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Buat folder kerja
+# Install dependency dasar + build tools
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y \
+    curl \
+    git \
+    wget \
+    bash \
+    nano \
+    lsof \
+    ffmpeg \
+    webp \
+    imagemagick \
+    python3 \
+    python3-pip \
+    build-essential \
+    apt-utils \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js LTS (RESMI)
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
+    && apt-get install -y nodejs
+
+# Cek biar gak halu
+RUN node -v && npm -v
+
+# Folder kerja
 WORKDIR /app
 
-# Copy package.json dan install dependencies
+# Install dependencies dulu (biar cache Docker kepake)
 COPY package*.json ./
 RUN npm install
 
-# Copy seluruh source code
+# Copy source code
 COPY . .
 
 # Expose port
 EXPOSE 8080
 
-# Jalankan server dengan PM2
+# Run app
 CMD ["npm", "start"]
