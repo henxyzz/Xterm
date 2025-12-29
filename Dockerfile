@@ -1,4 +1,4 @@
-FROM node:20
+FROM ubuntu:22.04
 
 LABEL maintainer="anakterminal@localhost"
 LABEL description="Dockerfile for Online Terminal using Node.js + xterm.js + pty.js"
@@ -9,6 +9,7 @@ RUN apt-get update && apt-get upgrade -y && \
   lsof \
   ffmpeg \
   git \
+  nodejs \
   webp \
   wget \
   imagemagick \
